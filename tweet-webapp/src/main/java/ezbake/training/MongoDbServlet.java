@@ -285,7 +285,7 @@ public class MongoDbServlet extends HttpServlet {
         String tweetContent = request.getParameter("tweetContent");
         String result = null;
         ContentPublisher.Client client = null;
-        String feedName = "tweet-ingest";
+        String feedName = "tweetingest";
         try {
             logger.info("Initiating request to Content Publisher Service");
             client = pool.getClient(ContentPublisherServiceConstants.SERVICE_NAME, ContentPublisher.Client.class);

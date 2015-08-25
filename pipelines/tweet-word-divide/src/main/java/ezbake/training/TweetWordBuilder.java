@@ -21,7 +21,7 @@ import ezbake.frack.api.PipelineBuilder;
 /**
  * Constructs the tweet-word-divide pipeline.
  *
- * The pipeline listens for a tweet from the tweet-ingest pipeline, divides the tweet text into words and saves the
+ * The pipeline listens for a tweet from the tweetingest pipeline, divides the tweet text into words and saves the
  * word to the word count service.
  */
 public class TweetWordBuilder implements PipelineBuilder {
@@ -31,7 +31,7 @@ public class TweetWordBuilder implements PipelineBuilder {
     private static final String SOURCE_TOPIC = "tweet-ingestTopic1";
 
     /**
-     * The unique name identifying the Listener that listens for the tweets emitted from the tweet-ingest pipeline.
+     * The unique name identifying the Listener that listens for the tweets emitted from the tweetingest pipeline.
      */
     private static final String PIPELINE_LISTENER = "tweet-word-listener";
 

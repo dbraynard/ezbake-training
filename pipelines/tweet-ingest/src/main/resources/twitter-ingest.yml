@@ -1,4 +1,4 @@
-#   Copyright (C) 2013-2014 Computer Sciences Corporation
+#   Copyright (C) 2013-2015 Computer Sciences Corporation
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -12,12 +12,22 @@
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
 
-debug=true
-oauth.consumerKey=############
-oauth.consumerSecret=#########
-oauth.accessToken=##########
-oauth.accessTokenSecret=#######
-jsonStoreEnabled=true
-#ezbake.security.app.id=client
-twitter.file.ingest=true
-tweets.folder=/var/lib/ezbake/sample-tweets
+Application:
+  name: TweetApplication
+  datasets: []
+  security_id: 2478856657521390691
+
+  Services:
+    -
+      service_name: ingest
+      type: Frack
+      language: Java
+      artifact_info:
+        bin: tweet-ingest-2.1-jar-with-dependencies.jar
+        config: []
+      resources:
+        cpu: small
+        mem: small
+        disk: small
+      scaling:
+        number_of_instances: 1

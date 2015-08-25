@@ -23,7 +23,7 @@ import ezbake.frack.common.workers.SSRBroadcastWorker;
 import ezbake.frack.common.workers.WarehausWorker;
 
 public class TweetIngestBuilder implements PipelineBuilder {
-    public static final String FEED_NAME = "tweet-ingest";
+    public static final String FEED_NAME = "tweetingest";
 
     public Pipeline build() {
         Pipeline pipeline = new Pipeline();
