@@ -31,6 +31,7 @@ import ezbake.thrift.ThriftClientPool;
 
 public class MongoDatasetClient {
     private static final String EZMONGO_SERVICE_NAME = "ezmongo";
+    private static final String APP_NAME = "TweetApplication";
     private static final Logger logger = LoggerFactory.getLogger(MongoDatasetClient.class);
 
     private static MongoDatasetClient instance;
@@ -50,7 +51,7 @@ public class MongoDatasetClient {
     }
 
     public EzMongo.Client getThriftClient() throws TException {
-        return pool.getClient(EZMONGO_SERVICE_NAME, EzMongo.Client.class);
+        return pool.getClient(APP_NAME, EZMONGO_SERVICE_NAME, EzMongo.Client.class);
     }
 
     public void close() throws Exception {
@@ -156,7 +157,7 @@ public class MongoDatasetClient {
         try {
             EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
 
-            tweetWordCountClient = pool.getClient(
+            tweetWordCountClient = pool.getClient(APP_NAME,
                     EzBakeTrainingConstants.WORD_COUNT_SERVICE_NAME, TweetWordCountService.Client.class);
 
             logger.info("Calling tweet word count service...");
