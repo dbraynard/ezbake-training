@@ -1,0 +1,21 @@
+
+Application:
+  name: ds_demo
+  security_id: 104592954198924385
+  auths: []
+  Services:
+    -
+      type: DataSet
+      language: Java
+      service_name: ezmongo
+      database: MongoDB
+      resources:
+        cpu: small
+        mem: small
+        disk: small
+      scaling:
+         number_of_instances: 1
+      artifact_info:
+        bin: ezmongo.jar
+        config: []
+      auths: []
