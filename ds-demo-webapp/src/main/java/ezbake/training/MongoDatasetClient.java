@@ -15,6 +15,7 @@
 package ezbake.training;
 
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.accumulo.core.security.VisibilityParseException;
 import org.apache.thrift.TException;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import ezbake.base.thrift.EzSecurityToken;
 import ezbake.configuration.EzConfiguration;
+import ezbake.configuration.constants.EzBakePropertyConstants;
 import ezbake.data.common.ThriftClient;
 import ezbake.data.common.classification.VisibilityUtils;
 import ezbake.data.mongo.thrift.EzMongo;
@@ -35,6 +37,7 @@ public class MongoDatasetClient {
     private static final Logger logger = LoggerFactory.getLogger(MongoDatasetClient.class);
 
     private static MongoDatasetClient instance;
+    private static String app_name;
 
     private ThriftClientPool pool;
     private EzbakeSecurityClient securityClient;
@@ -51,7 +54,7 @@ public class MongoDatasetClient {
     }
 
     public EzMongo.Client getThriftClient() throws TException {
-        return pool.getClient(APP_NAME, EZMONGO_SERVICE_NAME, EzMongo.Client.class);
+        return pool.getClient(this.app_name, EZMONGO_SERVICE_NAME, EzMongo.Client.class);
     }
 
     public void close() throws Exception {
@@ -157,10 +160,12 @@ public class MongoDatasetClient {
     void createClient() {
         try {
             EzConfiguration configuration = new EzConfiguration();
-            logger.info("in createClient, configuration: {}", configuration.getProperties());
+            Properties properties = configuration.getProperties();
+            logger.info("in createClient, configuration: {}", properties);
 
-            securityClient = new EzbakeSecurityClient(configuration.getProperties());
+            securityClient = new EzbakeSecurityClient(properties);
             pool = new ThriftClientPool(configuration.getProperties());
+            this.app_name= properties.getProperty(EzBakePropertyConstants.EZBAKE_APPLICATION_NAME, APP_NAME);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
