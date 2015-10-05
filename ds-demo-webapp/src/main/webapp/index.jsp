@@ -34,51 +34,26 @@
 
     <script type="text/javascript">
         $(function () {
-            $('#tweetContent').keyup(function () {
+            $('#ezmongoContent').keyup(function () {
                 var count = $(this).val().length;
                 $('#characters').text(count);
                 //console.log("# char: " + count);
             });
 
-            $("#searchText").keyup(function (event) {
+            $("#ezmongoSearch").keyup(function (event) {
                 //console.log("searchText keyup: " + event.keyCode);
                 if (event.keyCode == 13) {
                     $("#searchButton").click();
                 }
             });
-
-            $("#formalVisibility").focusout(function (event) {
-                var formalVisibility = $("#formalVisibility").val();
-
-                if (formalVisibility.trim().length > 0) {
-                    $.ajax({
-                        url: 'MongoDbServlet', type: "POST", data: {
-                            action: 'validateVisibility', formalVisibility: formalVisibility
-                        }, success: function (result) {
-                            $("#formalVisibilityValidation").attr('class', 'text-success');
-                            $("#formalVisibilityValidation").html("Valid");
-                        }, error: function (xhr, status, result) {
-                            var err = xhr.responseText;
-                            console.log("ERROR in formal visibility validation: " + err);
-                            $("#formalVisibilityValidation").attr('class', 'text-danger');
-                            $("#formalVisibilityValidation").html(err);
-                        }
-                    });
-                } else {
-                    $("#formalVisibilityValidation").html("");
-                }
-
-            });
         });
 
-        function insertTweet() {
+        function insertEzMongo() {
             if (!validateNumCharacters()) {
                 return;
             }
 
-            var userName = $("#userName").val();
-            var formalVisibility = $("#formalVisibility").val();
-            var tweetContent = $("#tweetContent").val();
+            var content = $("#ezmongoContent").val();
 
             $("#insertResult").attr('class', 'text-success');
             $("#insertResult").html("Calling the Content Publisher service, please wait...");
@@ -86,10 +61,8 @@
 
             $.ajax({
                 url: 'MongoDbServlet', type: "POST", data: {
-                    action: 'insertTweet',
-                    userName: userName,
-                    formalVisibility: formalVisibility,
-                    tweetContent: tweetContent
+                    action: 'insertText',
+                    Content: content
                 }, success: function (result) {
                     $("#insertResult").attr('class', 'text-success');
                     $("#insertResult").html(result);
@@ -105,12 +78,12 @@
         }
 
 
-        function searchTweet() {
+        function searchEzMongo() {
             var searchText = $("#searchText").val();
 
             $.ajax({
                 url: 'MongoDbServlet', type: "POST", data: {
-                    action: 'searchTweet', searchText: searchText
+                    action: 'searchEzMongo', searchText: searchText
                 }, success: function (result) {
                     $("#searchResult tbody").html(result);
                 }, error: function (xhr, status, result) {
@@ -123,7 +96,7 @@
         }
 
         function validateNumCharacters() {
-            var count = $('#tweetContent').val().length;
+            var count = $('#ezmongoContent').val().length;
 
             if (count > 140) {
                 alert("You have exceeded 140 characters: " + count);
@@ -151,67 +124,48 @@
 
 <div id="container">
     <div class="panel panel-default" id="content">
-        <h3 class="panel-title">Datasets Webapp Sample</h3>
+        <h3 class="panel-title">Datasets Webapp Demo</h3>
 
-        <!-- Insert Tweet -->
+        <!-- Insert Text -->
         <div class="panel-body">
-            <label>Insert Tweet</label>
+            <label>Insert Text</label>
 
-            <div class="left-inner-addon">
-                <i class="glyphicon glyphicon-user"></i>
-                <input type="text" id="userName" class="form-control" placeholder="User Name"></br>
-            </div>
-            <em class="hint" style="margin-top: 10px;">Formal visibility for tweet (for example: A&B&(C|D)):</em>
-            <em id="formalVisibilityValidation">
-
-            </em>
-            <input type="text" id="formalVisibility" class="form-control" placeholder=""></br>
-            <em class="hint" style="margin-top: 10px;">Tweet:</em>
-            <textarea id="tweetContent" class="form-control" rows="4" cols="40"
-                      placeholder="Enter tweet message here"></textarea>
+            <textarea id="ezmongoContent" class="form-control" rows="4" cols="40"
+                      placeholder="Enter text here"></textarea>
             <em class="hint" style="margin-top: 10px;">Number of characters:
                 <div id="characters" class="numCharacters">0</div>
             </em>
             <em class="hint" style="margin-top: 10px;">(max 140 characters)</em>
             <span class="input-group-btn">
                 <button class="btn btn-info btn-large" id="insertButton" type="button" name="insert"
-                        onClick="insertTweet()">Submit Tweet
+                        onClick="insertEzMongo()">Submit
                 </button>
             </span>
 
-            <!-- Insert Tweet output msg -->
+            <!-- Insert ezmongo output msg -->
             <div id="insertResult" class="text-success"></div>
         </div>
 
-        <!-- Search Tweet -->
+        <!-- Search EzMongo -->
         <ul class="list-group">
             <li class="list-group-item">
-                <label>Search Tweet</label>
+                <label>Search Text</label>
                 <em class="hint" style="margin-top: 10px;">Enter search term (stop words such as 'the', 'an', 'a' are
                     not supported):</em>
                 <input id="searchText" type="text" class="form-control" placeholder=""></br>
 
             <span class="input-group-btn">
                 <button class="btn btn-info btn-large" id="searchButton" type="button" name="search"
-                        onClick="searchTweet()">Search Tweet
+                        onClick="searchEzMongo()">Search
                 </button>
             </span>
-            </li>
-            <li class="list-group-item">
-                Word count (the number of times the search word appears in the tweets):
-                <div id="wordCount">
-                    0
-                </div>
             </li>
             <li class="list-group-item">
                 <!-- Search result output list -->
                 <table id="searchResult" class="table table-condensed">
                     <thead>
                         <tr>
-                            <th class="_id">_id</th>
-                            <th class="id">id</th>
-                            <th class="classification">formal visibility (classification)</th>
-                            <th class="tweet">user: tweet</th>
+                            <th class="text">text</th>
                         </tr>
                     </thead>
                     <tbody>

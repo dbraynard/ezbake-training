@@ -37,6 +37,7 @@
         <module>word-count-service</module>
         <module>pipelines</module>
         <module>tweet-webapp</module>
+        <module>ds-demo-webapp</module>
     </modules>
 
     <dependencyManagement>

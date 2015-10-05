@@ -37,7 +37,7 @@ public class MongoDatasetClient {
     private static final Logger logger = LoggerFactory.getLogger(MongoDatasetClient.class);
 
     private static MongoDatasetClient instance;
-    private static String app_name;
+    private String app_name;
 
     private ThriftClientPool pool;
     private EzbakeSecurityClient securityClient;

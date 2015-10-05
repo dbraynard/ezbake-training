@@ -18,3 +18,7 @@ dependency-reduced-pom.xml
 
 # Vi
 *.swp
+
+# Eclipse
+*.pmd
+.pmdruleset.xml
