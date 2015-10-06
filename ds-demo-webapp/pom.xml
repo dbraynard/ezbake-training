@@ -57,6 +57,11 @@
             <groupId>ezbake</groupId>
             <artifactId>ins-thrift</artifactId>
         </dependency>
+       <dependency>
+            <groupId>ezbake.data</groupId>
+            <artifactId>ezelastic-thrift</artifactId>
+            <version>${ezbake.version}</version>
+        </dependency>
 
         <!-- Internal dependencies -->
         <dependency>
