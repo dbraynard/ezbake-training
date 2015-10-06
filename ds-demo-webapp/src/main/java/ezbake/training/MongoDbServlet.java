@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.util.List;
 //import java.util.Properties;
 
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -33,14 +34,13 @@ import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
 //import ezbake.configuration.EzConfiguration;
-import ezbake.data.mongo.redact.RedactHelper;
 //import ezbake.security.client.EzbakeSecurityClient;
 //import ezbake.thrift.ThriftClientPool;
 
 public class MongoDbServlet extends HttpServlet {
     public static final String COLLECTION_NAME = "ezmongo_demo";
     public static final String USER_FIELD_NAME = "user";
-    public static final String USERNAME_FIELD_NAME = "username";
+    public static final String USERNAME_FIELD_NAME = "userName";
     public static final String SCREEN_NAME_FIELD_NAME = "screenName";
     public static final String SECONDARY_SCREEN_NAME_FIELD_NAME = "screen_name";
     public static final String TEXT_FIELD_NAME = "text";
@@ -162,55 +162,18 @@ public class MongoDbServlet extends HttpServlet {
                 result = "No results found.";
             } else {
                 StringBuilder buffer = new StringBuilder();
+                buffer.append("<tr><td>UID</td><td>Context</td></tr>");
+
                 for (String recordJSON : data) {
-                    buffer.append("<tr>");
-
                     DBObject dbObj = (DBObject) JSON.parse(recordJSON);
-                    String _id = dbObj.get("_id").toString();
-                    String id = null;
-                    Object idObj = dbObj.get("id");
-                    if (idObj != null && (idObj instanceof Long || idObj instanceof Integer)) {
-                        id = idObj.toString();
-                    }
 
-                    DBObject formalVisibilityObj = (DBObject) dbObj.get(RedactHelper.FORMAL_VISIBILITY_FIELD);
-                    String formalVisibility = null;
-                    if (formalVisibilityObj != null) {
-                        formalVisibility = formalVisibilityObj.toString();
-                    }
-
-                    DBObject userObj = (DBObject) dbObj.get(USER_FIELD_NAME);
-                    String userName;
-                    if (userObj != null) {
-                        userName = (String) userObj.get(SCREEN_NAME_FIELD_NAME);
-                        if (userName == null) {
-                            // it's possible that the tweets were ingested with a
-                            // different field name for the screen name.
-                            userName = (String) userObj.get(SECONDARY_SCREEN_NAME_FIELD_NAME);
-                        }
-                    } else { // try a different field name for the username
-                        userName = (String) dbObj.get(USERNAME_FIELD_NAME);
-                    }
-
-                    String context = (String) dbObj.get(TEXT_FIELD_NAME);
-
-                    // construct the columns to display on the jsp
+                    buffer.append("<tr>");
                     buffer.append("<td>");
-                    buffer.append(_id);
+                    buffer.append(dbObj.get("_id").toString());
                     buffer.append("</td>");
                     buffer.append("<td>");
-                    buffer.append(id);
+                    buffer.append((String) dbObj.get(TEXT_FIELD_NAME));
                     buffer.append("</td>");
-                    buffer.append("<td>");
-                    buffer.append(formalVisibility);
-                    buffer.append("</td>");
-                    buffer.append("<td>");
-                    buffer.append("@");
-                    buffer.append(userName);
-                    buffer.append(": ");
-                    buffer.append(context);
-                    buffer.append("</td>");
-
                     buffer.append("</tr>");
                 }
 
@@ -229,17 +192,20 @@ public class MongoDbServlet extends HttpServlet {
         String textContent = request.getParameter("Content");
         String result = null;
         try {
+            MongoDatasetClient client = MongoDatasetClient.getInstance();
+
+            client.insertText(COLLECTION_NAME, textContent);
             logger.info("Inserted text into EzMongo");
-            result = "Successfully added the text(id=" + textContent + ")";
+            result = "Successfully added the text (" + textContent + ")";
         } catch (Exception e) {
             result = "Failed to insert data: " + e.getMessage();
             logger.error("Failed to insert data", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//        } finally {
-//            //pool.returnToPool(client);
+            //        } finally {
+            //            //pool.returnToPool(client);
         }
 
-        return result;
+    return result;
     }
 
 }

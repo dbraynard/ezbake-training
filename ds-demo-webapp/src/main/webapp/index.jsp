@@ -165,7 +165,7 @@
                 <table id="searchResult" class="table table-condensed">
                     <thead>
                         <tr>
-                            <th class="text">text</th>
+                            <th class="text">Result</th>
                         </tr>
                     </thead>
                     <tbody>

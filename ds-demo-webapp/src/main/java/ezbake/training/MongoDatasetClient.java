@@ -16,20 +16,25 @@ package ezbake.training;
 
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 import org.apache.accumulo.core.security.VisibilityParseException;
 import org.apache.thrift.TException;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TSimpleJSONProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ezbake.base.thrift.EzSecurityToken;
 import ezbake.configuration.EzConfiguration;
 import ezbake.configuration.constants.EzBakePropertyConstants;
 import ezbake.data.common.ThriftClient;
 import ezbake.data.common.classification.VisibilityUtils;
 import ezbake.data.mongo.thrift.EzMongo;
+import ezbake.data.mongo.thrift.MongoEzbakeDocument;
 import ezbake.security.client.EzbakeSecurityClient;
 import ezbake.thrift.ThriftClientPool;
+import ezbake.base.thrift.EzSecurityToken;
+import ezbake.base.thrift.Visibility;
 
 public class MongoDatasetClient {
     private static final String EZMONGO_SERVICE_NAME = "ezmongo";
@@ -153,6 +158,36 @@ public class MongoDatasetClient {
         return results;
     }
 
+    public void insertText(String collectionName, String text) throws TException {
+        EzMongo.Client c = null;
+
+        try {
+            EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
+            c = getThriftClient();
+            logger.info("Calling EzMongo insertText for {}...", collectionName);
+
+            Tweet tweet = new Tweet();
+            tweet.setTimestamp(System.currentTimeMillis());
+            tweet.setId(0);
+            tweet.setText(text);
+            tweet.setUserId(1);
+            tweet.setUserName("test");
+            tweet.setIsFavorite(new Random().nextBoolean());
+            tweet.setIsRetweet(new Random().nextBoolean());
+
+            Visibility visibility = new Visibility();
+            TSerializer serializer = new TSerializer(new TSimpleJSONProtocol.Factory());
+            String jsonContent = serializer.toString(tweet);
+
+            String result = c.insert(collectionName, new MongoEzbakeDocument(jsonContent, visibility.setFormalVisibility("U")), token);
+            logger.info("Successful mongo client insert {}", result);
+        } finally {
+            if (c != null) {
+                pool.returnToPool(c);
+            }
+        }
+    }
+
     public void validateVisibility(String formalVisibility) throws VisibilityParseException {
         VisibilityUtils.generateVisibilityList(formalVisibility);
     }
@@ -165,7 +200,7 @@ public class MongoDatasetClient {
 
             securityClient = new EzbakeSecurityClient(properties);
             pool = new ThriftClientPool(configuration.getProperties());
-            this.app_name= properties.getProperty(EzBakePropertyConstants.EZBAKE_APPLICATION_NAME, APP_NAME);
+            this.app_name = properties.getProperty(EzBakePropertyConstants.EZBAKE_APPLICATION_NAME, APP_NAME);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
