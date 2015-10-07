@@ -19,14 +19,14 @@
 
 <web-app>
     <servlet>
-        <servlet-name>MongoDbServlet</servlet-name>
-        <servlet-class>ezbake.training.MongoDbServlet</servlet-class>
+        <servlet-name>DatasetServlet</servlet-name>
+        <servlet-class>ezbake.training.DatasetServlet</servlet-class>
         <load-on-startup>0</load-on-startup>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>MongoDbServlet</servlet-name>
-        <url-pattern>/MongoDbServlet</url-pattern>
+        <servlet-name>DatasetServlet</servlet-name>
+        <url-pattern>/DatasetServlet</url-pattern>
     </servlet-mapping>
     <listener>
         <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
