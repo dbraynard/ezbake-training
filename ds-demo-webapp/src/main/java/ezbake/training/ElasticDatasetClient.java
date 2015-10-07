@@ -17,8 +17,9 @@ package ezbake.training;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.UUID;
+import java.util.ArrayList;
 
-import org.apache.accumulo.core.security.VisibilityParseException;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TSimpleJSONProtocol;
@@ -28,190 +29,212 @@ import org.slf4j.LoggerFactory;
 import ezbake.configuration.EzConfiguration;
 import ezbake.configuration.constants.EzBakePropertyConstants;
 import ezbake.data.common.ThriftClient;
-import ezbake.data.common.classification.VisibilityUtils;
 import ezbake.data.elastic.thrift.EzElastic;
+import ezbake.data.elastic.thrift.Document;
+import ezbake.data.elastic.thrift.SearchResult;
+import ezbake.data.elastic.thrift.Query;
+
 import ezbake.security.client.EzbakeSecurityClient;
 import ezbake.thrift.ThriftClientPool;
 import ezbake.base.thrift.EzSecurityToken;
 import ezbake.base.thrift.Visibility;
 
+import org.elasticsearch.index.query.QueryBuilders;
+
 public class ElasticDatasetClient {
-    private static final String EZELASTIC_SERVICE_NAME = "ezelastic";
-    private static final String APP_NAME = "ds_demo";
-    private static final Logger logger = LoggerFactory.getLogger(ElasticDatasetClient.class);
+	// private static final String EZELASTIC_SERVICE_NAME = "ezelastic";
+	private static final String APP_NAME = "ds_demo";
+	private static final Logger logger = LoggerFactory
+			.getLogger(ElasticDatasetClient.class);
 
-    private static ElasticDatasetClient instance;
-    private String app_name;
+	private static ElasticDatasetClient instance;
+	private String app_name;
 
-    private ThriftClientPool pool;
-    private EzbakeSecurityClient securityClient;
+	private ThriftClientPool pool;
+	private EzbakeSecurityClient securityClient;
 
-    private ElasticDatasetClient() {
-        createClient();
-    }
+	private ElasticDatasetClient() {
+		createClient();
+	}
 
-    public static ElasticDatasetClient getInstance() {
-        if (instance == null) {
-            instance = new ElasticDatasetClient();
-        }
-        return instance;
-    }
+	public static ElasticDatasetClient getInstance() {
+		if (instance == null) {
+			instance = new ElasticDatasetClient();
+		}
+		return instance;
+	}
 
-    public EzElastic.Client getThriftClient() throws TException {
-        return pool.getClient(this.app_name, EZELASTIC_SERVICE_NAME, EzElastic.Client.class);
-    }
+	public EzElastic.Client getThriftClient() throws TException {
+		// return pool.getClient(this.app_name, EZELASTIC_SERVICE_NAME,
+		// EzElastic.Client.class);
+		System.out.println(this.app_name);
+		return pool.getClient("ins", "documentService", EzElastic.Client.class);
+	}
 
-    public void close() throws Exception {
-        ThriftClient.close();
-    }
+	public void close() throws Exception {
+		ThriftClient.close();
+	}
 
-    public void createIndex(String collectionName, String jsonKeys, String jsonOptions) throws TException {
-        EzElastic.Client c = null;
+	public void createIndex(String collectionName, String jsonKeys,
+			String jsonOptions) throws TException {
+		EzElastic.Client c = null;
 
-        try {
-            EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-            System.out.println(token);
+		try {
+			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
+			System.out.println(token);
 
-            c = getThriftClient();
-            logger.info("Calling EzElastic creating index for {}...", collectionName);
-            //c.createIndex(collectionName, jsonKeys, jsonOptions, token);
-            logger.info("Index created.");
-        } finally {
-            if (c != null) {
-                pool.returnToPool(c);
-            }
-        }
-    }
+			c = getThriftClient();
+			logger.info("Calling EzElastic creating index for {}...",
+					collectionName);
+			// c.createIndex(collectionName, jsonKeys, jsonOptions, token);
+			logger.info("Index created.");
+		} finally {
+			if (c != null) {
+				pool.returnToPool(c);
+			}
+		}
+	}
 
-    public List<String> getIndexInfo(String collectionName) throws TException {
-        EzElastic.Client c = null;
+	public List<String> getIndexInfo(String collectionName) throws TException {
+		EzElastic.Client c = null;
 
-        try {
-            EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-            System.out.println(token);
+		try {
+			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
+			System.out.println(token);
 
-            c = getThriftClient();
+			c = getThriftClient();
 
-            logger.info("Calling EzElastic getting index info for {}...", collectionName);
-            //return c.getIndexInfo(collectionName, token);
-            return null;
-        } finally {
-            if (c != null) {
-                pool.returnToPool(c);
-            }
-        }
-    }
+			logger.info("Calling EzElastic getting index info for {}...",
+					collectionName);
+			// return c.getIndexInfo(collectionName, token);
+			return null;
+		} finally {
+			if (c != null) {
+				pool.returnToPool(c);
+			}
+		}
+	}
 
-    public boolean collectionExists(String collectionName) throws TException {
-        EzElastic.Client c = null;
+	public boolean collectionExists(String collectionName) throws TException {
+		EzElastic.Client c = null;
 
-        try {
-            EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-            System.out.println(token);
+		try {
+			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
+			System.out.println(token);
 
-            c = getThriftClient();
+			c = getThriftClient();
 
-            logger.info("Calling EzElastic checking collection {}...", collectionName);
-            //boolean exists = c.collectionExists(collectionName, token);
-            boolean exists = false;
-            logger.info("collection {} exists: {}", collectionName, exists);
+			logger.info("Calling EzElastic checking collection {}...",
+					collectionName);
+			// boolean exists = c.collectionExists(collectionName, token);
+			boolean exists = false;
+			logger.info("collection {} exists: {}", collectionName, exists);
 
-            return exists;
-        } finally {
-            if (c != null) {
-                pool.returnToPool(c);
-            }
-        }
-    }
+			return exists;
+		} finally {
+			if (c != null) {
+				pool.returnToPool(c);
+			}
+		}
+	}
 
-    public void createCollection(String collectionName) throws TException {
-        EzElastic.Client c = null;
+	public void createCollection(String collectionName) throws TException {
+		EzElastic.Client c = null;
 
-        try {
-            EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-            System.out.println(token);
+		try {
+			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
+			System.out.println(token);
 
-            c = getThriftClient();
+			c = getThriftClient();
 
-            logger.info("Calling EzElastic creating collection {}...", collectionName);
-            //c.createCollection(collectionName, token);
-            logger.info("Created collection {}", collectionName);
-        } finally {
-            if (c != null) {
-                pool.returnToPool(c);
-            }
-        }
-    }
+			logger.info("Calling EzElastic creating collection {}...",
+					collectionName);
+			// c.createCollection(collectionName, token);
+			logger.info("Created collection {}", collectionName);
+		} finally {
+			if (c != null) {
+				pool.returnToPool(c);
+			}
+		}
+	}
 
-    public List<String> searchText(String collectionName, String searchText) throws TException {
-        EzElastic.Client c = null;
-        List<String> results = null;
+	public List<String> searchText(String collectionName, String searchText)
+			throws TException {
+		EzElastic.Client c = null;
+		List<String> results = new ArrayList<String>();
 
-        try {
-            EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-            System.out.println(token);
+		try {
+			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
 
-            c = getThriftClient();
+			c = getThriftClient();
 
-            logger.info("Calling EzElastic searching text for {}...", searchText);
-            //results = c.textSearch(collectionName, searchText, token);
-            logger.info("Text search results: {}", results);
-        } finally {
-            if (c != null) {
-                pool.returnToPool(c);
-            }
-        }
-        return results;
-    }
+			logger.info("Query EzElastic text for {}...", searchText);
+			final SearchResult result = c.query(new Query(QueryBuilders
+					.termQuery("text", searchText).toString()), token);
+			for (Document doc : result.getMatchingDocuments()) {
+				results.add(doc.get_jsonObject());
+			}
+			logger.info("Text search results: {}", results);
+		} finally {
+			if (c != null) {
+				pool.returnToPool(c);
+			}
+		}
+		return results;
+	}
 
-    public void insertText(String collectionName, String text) throws TException {
-        EzElastic.Client c = null;
+	public void insertText(String collectionName, String text)
+			throws TException {
+		EzElastic.Client c = null;
 
-        try {
-            EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-            System.out.println(token);
-            c = getThriftClient();
-            logger.info("Calling EzElastic insertText for {}...", collectionName);
+		try {
+			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
+			c = getThriftClient();
+			logger.info("Calling EzElastic insertText for {}...",
+					collectionName);
 
-            Tweet tweet = new Tweet();
-            tweet.setTimestamp(System.currentTimeMillis());
-            tweet.setId(0);
-            tweet.setText(text);
-            tweet.setUserId(1);
-            tweet.setUserName("test");
-            tweet.setIsFavorite(new Random().nextBoolean());
-            tweet.setIsRetweet(new Random().nextBoolean());
+			Tweet tweet = new Tweet();
+			tweet.setTimestamp(System.currentTimeMillis());
+			tweet.setId(0);
+			tweet.setText(text);
+			tweet.setUserId(1);
+			tweet.setUserName("test");
+			tweet.setIsFavorite(new Random().nextBoolean());
+			tweet.setIsRetweet(new Random().nextBoolean());
 
-            Visibility visibility = new Visibility();
-            System.out.println(visibility);
-            TSerializer serializer = new TSerializer(new TSimpleJSONProtocol.Factory());
-            String jsonContent = serializer.toString(tweet);
-            System.out.println(jsonContent);
+			Visibility visibility = new Visibility();
+			TSerializer serializer = new TSerializer(
+					new TSimpleJSONProtocol.Factory());
+			String jsonContent = serializer.toString(tweet);
 
-            //String result = c.insert(collectionName, new MongoEzbakeDocument(jsonContent, visibility.setFormalVisibility("U")), token);
-            //logger.info("Successful mongo client insert {}", result);
-        } finally {
-            if (c != null) {
-                pool.returnToPool(c);
-            }
-        }
-    }
+			final Document doc = new Document();
+			doc.set_id(UUID.randomUUID().toString());
+			doc.set_type("TEST");
+			doc.set_jsonObject(jsonContent);
+			doc.setVisibility(visibility.setFormalVisibility("U"));
 
-    public void validateVisibility(String formalVisibility) throws VisibilityParseException {
-        VisibilityUtils.generateVisibilityList(formalVisibility);
-    }
+			c.put(doc, token);
 
-    void createClient() {
-        try {
-            EzConfiguration configuration = new EzConfiguration();
-            Properties properties = configuration.getProperties();
-            logger.info("in createClient, configuration: {}", properties);
+			logger.info("Successful elastic client insert");
+		} finally {
+			if (c != null) {
+				pool.returnToPool(c);
+			}
+		}
+	}
 
-            securityClient = new EzbakeSecurityClient(properties);
-            pool = new ThriftClientPool(configuration.getProperties());
-            this.app_name = properties.getProperty(EzBakePropertyConstants.EZBAKE_APPLICATION_NAME, APP_NAME);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
+	void createClient() {
+		try {
+			EzConfiguration configuration = new EzConfiguration();
+			Properties properties = configuration.getProperties();
+			logger.info("in createClient, configuration: {}", properties);
+
+			securityClient = new EzbakeSecurityClient(properties);
+			pool = new ThriftClientPool(configuration.getProperties());
+			this.app_name = properties.getProperty(
+					EzBakePropertyConstants.EZBAKE_APPLICATION_NAME, APP_NAME);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
 }

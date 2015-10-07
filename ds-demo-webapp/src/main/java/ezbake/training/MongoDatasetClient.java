@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import org.apache.accumulo.core.security.VisibilityParseException;
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
 import org.apache.thrift.protocol.TSimpleJSONProtocol;
@@ -28,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import ezbake.configuration.EzConfiguration;
 import ezbake.configuration.constants.EzBakePropertyConstants;
 import ezbake.data.common.ThriftClient;
-import ezbake.data.common.classification.VisibilityUtils;
 import ezbake.data.mongo.thrift.EzMongo;
 import ezbake.data.mongo.thrift.MongoEzbakeDocument;
 import ezbake.security.client.EzbakeSecurityClient;
@@ -186,10 +184,6 @@ public class MongoDatasetClient {
                 pool.returnToPool(c);
             }
         }
-    }
-
-    public void validateVisibility(String formalVisibility) throws VisibilityParseException {
-        VisibilityUtils.generateVisibilityList(formalVisibility);
     }
 
     void createClient() {

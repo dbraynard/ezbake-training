@@ -38,7 +38,7 @@ import com.mongodb.util.JSON;
 //import ezbake.thrift.ThriftClientPool;
 
 public class DatasetServlet extends HttpServlet {
-	public static final String COLLECTION_NAME = "ezmongo_demo";
+	public static final String COLLECTION_NAME = "ds_dataset_demo";
 	public static final String USER_FIELD_NAME = "user";
 	public static final String USERNAME_FIELD_NAME = "userName";
 	public static final String SCREEN_NAME_FIELD_NAME = "screenName";
@@ -79,6 +79,22 @@ public class DatasetServlet extends HttpServlet {
 			// final Properties props = new EzConfiguration().getProperties();
 			// this.pool = new ThriftClientPool(props);
 			// this.securityClient = new EzbakeSecurityClient(props);
+		} catch (Exception e) {
+			logger.error("Error during initialization", e);
+			throw new ServletException(e.getMessage());
+		}
+
+		try {
+			ElasticDatasetClient client = ElasticDatasetClient.getInstance();
+
+			logger.info("Initializing mongo db servlet, COLLECTION_NAME: {}",
+					COLLECTION_NAME);
+
+			// if collection doesn't exist, create it.
+			if (!client.collectionExists(COLLECTION_NAME)) {
+				logger.info("collection doesn't exist, we need to create the collection.");
+				client.createCollection(COLLECTION_NAME);
+			}
 		} catch (Exception e) {
 			logger.error("Error during initialization", e);
 			throw new ServletException(e.getMessage());
@@ -165,11 +181,18 @@ public class DatasetServlet extends HttpServlet {
 		try {
 			switch (dataset) {
 			case "mongo":
+			{
 				MongoDatasetClient client = MongoDatasetClient.getInstance();
 				createTextIndex(client);
 				data = client.searchText(COLLECTION_NAME, searchText);
 				break;
+			}
 			case "elastic":
+			{
+				ElasticDatasetClient client = ElasticDatasetClient.getInstance();
+				data = client.searchText(COLLECTION_NAME, searchText);
+				break;
+			}
 			default:
 				throw new IllegalArgumentException("Invalid dataset: "
 						+ dataset);
@@ -179,17 +202,12 @@ public class DatasetServlet extends HttpServlet {
 				result = "No results found.";
 			} else {
 				StringBuilder buffer = new StringBuilder();
-				buffer.append("<tr><td>UID</td><td>Context</td></tr>");
 
 				for (String recordJSON : data) {
-					DBObject dbObj = (DBObject) JSON.parse(recordJSON);
 
 					buffer.append("<tr>");
 					buffer.append("<td>");
-					buffer.append(dbObj.get("_id").toString());
-					buffer.append("</td>");
-					buffer.append("<td>");
-					buffer.append((String) dbObj.get(TEXT_FIELD_NAME));
+					buffer.append(recordJSON);
 					buffer.append("</td>");
 					buffer.append("</tr>");
 				}
@@ -213,16 +231,24 @@ public class DatasetServlet extends HttpServlet {
 		try {
 			switch (dataset) {
 			case "mongo":
+			{
 				MongoDatasetClient client = MongoDatasetClient.getInstance();
 				client.insertText(COLLECTION_NAME, textContent);
 				break;
+			}
 			case "elastic":
+			{
+				ElasticDatasetClient client = ElasticDatasetClient.getInstance();
+				client.insertText(COLLECTION_NAME, textContent);
+				break;
+			}
 			default:
 				throw new IllegalArgumentException("Invalid dataset: "
 						+ dataset);
 			}
 
-			result = "Successfully added the text (" + textContent + ") to " + dataset;
+			result = "Successfully added the text (" + textContent + ") to "
+					+ dataset;
 		} catch (Exception e) {
 			result = "Failed to insert data: " + e.getMessage();
 			logger.error("Failed to insert data", e);
