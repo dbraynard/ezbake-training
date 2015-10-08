@@ -42,7 +42,7 @@ import ezbake.base.thrift.Visibility;
 import org.elasticsearch.index.query.QueryBuilders;
 
 public class ElasticDatasetClient {
-	// private static final String EZELASTIC_SERVICE_NAME = "ezelastic";
+	private static final String EZELASTIC_SERVICE_NAME = "ezelastic";
 	private static final String APP_NAME = "ds_demo";
 	private static final Logger logger = LoggerFactory
 			.getLogger(ElasticDatasetClient.class);
@@ -65,97 +65,12 @@ public class ElasticDatasetClient {
 	}
 
 	public EzElastic.Client getThriftClient() throws TException {
-		// return pool.getClient(this.app_name, EZELASTIC_SERVICE_NAME,
-		// EzElastic.Client.class);
-		System.out.println(this.app_name);
-		return pool.getClient("ins", "documentService", EzElastic.Client.class);
+		return pool.getClient(this.app_name, EZELASTIC_SERVICE_NAME,
+				EzElastic.Client.class);
 	}
 
 	public void close() throws Exception {
 		ThriftClient.close();
-	}
-
-	public void createIndex(String collectionName, String jsonKeys,
-			String jsonOptions) throws TException {
-		EzElastic.Client c = null;
-
-		try {
-			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-			System.out.println(token);
-
-			c = getThriftClient();
-			logger.info("Calling EzElastic creating index for {}...",
-					collectionName);
-			// c.createIndex(collectionName, jsonKeys, jsonOptions, token);
-			logger.info("Index created.");
-		} finally {
-			if (c != null) {
-				pool.returnToPool(c);
-			}
-		}
-	}
-
-	public List<String> getIndexInfo(String collectionName) throws TException {
-		EzElastic.Client c = null;
-
-		try {
-			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-			System.out.println(token);
-
-			c = getThriftClient();
-
-			logger.info("Calling EzElastic getting index info for {}...",
-					collectionName);
-			// return c.getIndexInfo(collectionName, token);
-			return null;
-		} finally {
-			if (c != null) {
-				pool.returnToPool(c);
-			}
-		}
-	}
-
-	public boolean collectionExists(String collectionName) throws TException {
-		EzElastic.Client c = null;
-
-		try {
-			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-			System.out.println(token);
-
-			c = getThriftClient();
-
-			logger.info("Calling EzElastic checking collection {}...",
-					collectionName);
-			// boolean exists = c.collectionExists(collectionName, token);
-			boolean exists = false;
-			logger.info("collection {} exists: {}", collectionName, exists);
-
-			return exists;
-		} finally {
-			if (c != null) {
-				pool.returnToPool(c);
-			}
-		}
-	}
-
-	public void createCollection(String collectionName) throws TException {
-		EzElastic.Client c = null;
-
-		try {
-			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-			System.out.println(token);
-
-			c = getThriftClient();
-
-			logger.info("Calling EzElastic creating collection {}...",
-					collectionName);
-			// c.createCollection(collectionName, token);
-			logger.info("Created collection {}", collectionName);
-		} finally {
-			if (c != null) {
-				pool.returnToPool(c);
-			}
-		}
 	}
 
 	public List<String> searchText(String collectionName, String searchText)

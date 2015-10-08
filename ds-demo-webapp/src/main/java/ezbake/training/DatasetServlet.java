@@ -65,7 +65,7 @@ public class DatasetServlet extends HttpServlet {
 		try {
 			MongoDatasetClient client = MongoDatasetClient.getInstance();
 
-			logger.info("Initializing mongo db servlet, COLLECTION_NAME: {}",
+			logger.info("Initializing mongo db client, COLLECTION_NAME: {}",
 					COLLECTION_NAME);
 
 			// if collection doesn't exist, create it.
@@ -79,22 +79,6 @@ public class DatasetServlet extends HttpServlet {
 			// final Properties props = new EzConfiguration().getProperties();
 			// this.pool = new ThriftClientPool(props);
 			// this.securityClient = new EzbakeSecurityClient(props);
-		} catch (Exception e) {
-			logger.error("Error during initialization", e);
-			throw new ServletException(e.getMessage());
-		}
-
-		try {
-			ElasticDatasetClient client = ElasticDatasetClient.getInstance();
-
-			logger.info("Initializing mongo db servlet, COLLECTION_NAME: {}",
-					COLLECTION_NAME);
-
-			// if collection doesn't exist, create it.
-			if (!client.collectionExists(COLLECTION_NAME)) {
-				logger.info("collection doesn't exist, we need to create the collection.");
-				client.createCollection(COLLECTION_NAME);
-			}
 		} catch (Exception e) {
 			logger.error("Error during initialization", e);
 			throw new ServletException(e.getMessage());
