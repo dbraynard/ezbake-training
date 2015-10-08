@@ -17,6 +17,8 @@ package ezbake.training;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
+import java.util.UUID;
+import java.util.ArrayList;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.TSerializer;
@@ -27,134 +29,66 @@ import org.slf4j.LoggerFactory;
 import ezbake.configuration.EzConfiguration;
 import ezbake.configuration.constants.EzBakePropertyConstants;
 import ezbake.data.common.ThriftClient;
-import ezbake.data.mongo.thrift.EzMongo;
-import ezbake.data.mongo.thrift.MongoEzbakeDocument;
+import ezbake.data.elastic.thrift.EzElastic;
+import ezbake.data.elastic.thrift.Document;
+import ezbake.data.elastic.thrift.SearchResult;
+import ezbake.data.elastic.thrift.Query;
+
 import ezbake.security.client.EzbakeSecurityClient;
 import ezbake.thrift.ThriftClientPool;
 import ezbake.base.thrift.EzSecurityToken;
 import ezbake.base.thrift.Visibility;
 
-public class MongoDatasetClient {
-	private static final String EZMONGO_SERVICE_NAME = "ezmongo";
+import org.elasticsearch.index.query.QueryBuilders;
+
+public class ElasticDatasetClient {
+	private static final String EZELASTIC_SERVICE_NAME = "ezelastic";
 	private static final String APP_NAME = "ds_demo";
 	private static final Logger logger = LoggerFactory
-			.getLogger(MongoDatasetClient.class);
+			.getLogger(ElasticDatasetClient.class);
 
-	private static MongoDatasetClient instance;
+	private static ElasticDatasetClient instance;
 	private String app_name;
 
 	private ThriftClientPool pool;
 	private EzbakeSecurityClient securityClient;
 
-	private MongoDatasetClient() {
+	private ElasticDatasetClient() {
 		createClient();
 	}
 
-	public static MongoDatasetClient getInstance() {
+	public static ElasticDatasetClient getInstance() {
 		if (instance == null) {
-			instance = new MongoDatasetClient();
+			instance = new ElasticDatasetClient();
 		}
 		return instance;
 	}
 
-	public EzMongo.Client getThriftClient() throws TException {
-		return pool.getClient(this.app_name, EZMONGO_SERVICE_NAME,
-				EzMongo.Client.class);
+	public EzElastic.Client getThriftClient() throws TException {
+		return pool.getClient(this.app_name, EZELASTIC_SERVICE_NAME,
+				EzElastic.Client.class);
 	}
 
 	public void close() throws Exception {
 		ThriftClient.close();
 	}
 
-	public void createIndex(String collectionName, String jsonKeys,
-			String jsonOptions) throws TException {
-		EzMongo.Client c = null;
-
-		try {
-			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-
-			c = getThriftClient();
-			logger.info("Calling EzMongo creating index for {}...",
-					collectionName);
-			c.createIndex(collectionName, jsonKeys, jsonOptions, token);
-			logger.info("Index created.");
-		} finally {
-			if (c != null) {
-				pool.returnToPool(c);
-			}
-		}
-	}
-
-	public List<String> getIndexInfo(String collectionName) throws TException {
-		EzMongo.Client c = null;
-
-		try {
-			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-
-			c = getThriftClient();
-
-			logger.info("Calling EzMongo getting index info for {}...",
-					collectionName);
-			return c.getIndexInfo(collectionName, token);
-		} finally {
-			if (c != null) {
-				pool.returnToPool(c);
-			}
-		}
-	}
-
-	public boolean collectionExists(String collectionName) throws TException {
-		EzMongo.Client c = null;
-
-		try {
-			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-
-			c = getThriftClient();
-
-			logger.info("Calling EzMongo checking collection {}...",
-					collectionName);
-			boolean exists = c.collectionExists(collectionName, token);
-			logger.info("collection {} exists: {}", collectionName, exists);
-
-			return exists;
-		} finally {
-			if (c != null) {
-				pool.returnToPool(c);
-			}
-		}
-	}
-
-	public void createCollection(String collectionName) throws TException {
-		EzMongo.Client c = null;
-
-		try {
-			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-
-			c = getThriftClient();
-
-			logger.info("Calling EzMongo creating collection {}...",
-					collectionName);
-			c.createCollection(collectionName, token);
-			logger.info("Created collection {}", collectionName);
-		} finally {
-			if (c != null) {
-				pool.returnToPool(c);
-			}
-		}
-	}
-
 	public List<String> searchText(String collectionName, String searchText)
 			throws TException {
-		EzMongo.Client c = null;
-		List<String> results;
+		EzElastic.Client c = null;
+		List<String> results = new ArrayList<String>();
 
 		try {
 			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
 
 			c = getThriftClient();
 
-			logger.info("Calling EzMongo searching text for {}...", searchText);
-			results = c.textSearch(collectionName, searchText, token);
+			logger.info("Query EzElastic text for {}...", searchText);
+			final SearchResult result = c.query(new Query(QueryBuilders
+					.termQuery("text", searchText).toString()), token);
+			for (Document doc : result.getMatchingDocuments()) {
+				results.add(doc.get_jsonObject());
+			}
 			logger.info("Text search results: {}", results);
 		} finally {
 			if (c != null) {
@@ -166,12 +100,13 @@ public class MongoDatasetClient {
 
 	public void insertText(String collectionName, String text)
 			throws TException {
-		EzMongo.Client c = null;
+		EzElastic.Client c = null;
 
 		try {
 			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
 			c = getThriftClient();
-			logger.info("Calling EzMongo insertText for {}...", collectionName);
+			logger.info("Calling EzElastic insertText for {}...",
+					collectionName);
 
 			Tweet tweet = new Tweet();
 			tweet.setTimestamp(System.currentTimeMillis());
@@ -187,9 +122,15 @@ public class MongoDatasetClient {
 					new TSimpleJSONProtocol.Factory());
 			String jsonContent = serializer.toString(tweet);
 
-			String result = c.insert(collectionName, new MongoEzbakeDocument(
-					jsonContent, visibility.setFormalVisibility("U")), token);
-			logger.info("Successful mongo client insert {}", result);
+			final Document doc = new Document();
+			doc.set_id(UUID.randomUUID().toString());
+			doc.set_type("TEST");
+			doc.set_jsonObject(jsonContent);
+			doc.setVisibility(visibility.setFormalVisibility("U"));
+
+			c.put(doc, token);
+
+			logger.info("Successful elastic client insert");
 		} finally {
 			if (c != null) {
 				pool.returnToPool(c);

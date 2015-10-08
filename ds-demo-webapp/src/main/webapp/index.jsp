@@ -34,13 +34,13 @@
 
     <script type="text/javascript">
         $(function () {
-            $('#ezmongoContent').keyup(function () {
+            $('#Content').keyup(function () {
                 var count = $(this).val().length;
                 $('#characters').text(count);
                 //console.log("# char: " + count);
             });
 
-            $("#ezmongoSearch").keyup(function (event) {
+            $("#Search").keyup(function (event) {
                 //console.log("searchText keyup: " + event.keyCode);
                 if (event.keyCode == 13) {
                     $("#searchButton").click();
@@ -48,26 +48,25 @@
             });
         });
 
-        function insertEzMongo() {
+        function insert() {
             if (!validateNumCharacters()) {
                 return;
             }
 
-            var content = $("#ezmongoContent").val();
+            var content = $("#Content").val();
+            var dataset = $(".dataset:checked").val();
 
             $("#insertResult").attr('class', 'text-success');
-            $("#insertResult").html("Calling the Content Publisher service, please wait...");
+            $("#insertResult").html("Calling the dataset service, please wait...");
             $("#insertButton").prop("disabled", true);
 
             $.ajax({
-                url: 'MongoDbServlet', type: "POST", data: {
-                    action: 'insertText',
-                    Content: content
+                url: 'DatasetServlet', type: "POST", data: {
+                    action: 'insertText', content: content, dataset: dataset
                 }, success: function (result) {
                     $("#insertResult").attr('class', 'text-success');
                     $("#insertResult").html(result);
                     $("#insertButton").prop("disabled", false);
-                }, error: function (xhr, status, result) {
                     var err = xhr.responseText;
                     console.log("ERROR in insert: " + err);
                     $("#insertResult").attr('class', 'text-danger');
@@ -78,12 +77,13 @@
         }
 
 
-        function searchEzMongo() {
+        function search() {
             var searchText = $("#searchText").val();
+            var dataset = $(".dataset:checked").val();
 
             $.ajax({
-                url: 'MongoDbServlet', type: "POST", data: {
-                    action: 'searchEzMongo', searchText: searchText
+                url: 'DatasetServlet', type: "POST", data: {
+                    action: 'search', searchText: searchText, dataset: dataset
                 }, success: function (result) {
                     $("#searchResult tbody").html(result);
                 }, error: function (xhr, status, result) {
@@ -96,7 +96,7 @@
         }
 
         function validateNumCharacters() {
-            var count = $('#ezmongoContent').val().length;
+            var count = $('#Content').val().length;
 
             if (count > 140) {
                 alert("You have exceeded 140 characters: " + count);
@@ -128,9 +128,12 @@
 
         <!-- Insert Text -->
         <div class="panel-body">
+            <h3>Select Your Favorite Dataset :</h3>
+            <p><input id="dataset" type="radio" name="dataset" class="dataset" value="mongo" checked> Mongo</input></p>
+			<p><input id="dataset" type="radio" name="dataset" class="dataset" value="elastic"> Elastic</input></p>
             <label>Insert Text</label>
 
-            <textarea id="ezmongoContent" class="form-control" rows="4" cols="40"
+            <textarea id="Content" class="form-control" rows="4" cols="40"
                       placeholder="Enter text here"></textarea>
             <em class="hint" style="margin-top: 10px;">Number of characters:
                 <div id="characters" class="numCharacters">0</div>
@@ -138,15 +141,15 @@
             <em class="hint" style="margin-top: 10px;">(max 140 characters)</em>
             <span class="input-group-btn">
                 <button class="btn btn-info btn-large" id="insertButton" type="button" name="insert"
-                        onClick="insertEzMongo()">Submit
+                        onClick="insert()">Submit
                 </button>
             </span>
 
-            <!-- Insert ezmongo output msg -->
+            <!-- Insert output msg -->
             <div id="insertResult" class="text-success"></div>
         </div>
 
-        <!-- Search EzMongo -->
+        <!-- Search dataset -->
         <ul class="list-group">
             <li class="list-group-item">
                 <label>Search Text</label>
@@ -156,7 +159,7 @@
 
             <span class="input-group-btn">
                 <button class="btn btn-info btn-large" id="searchButton" type="button" name="search"
-                        onClick="searchEzMongo()">Search
+                        onClick="search()">Search
                 </button>
             </span>
             </li>
