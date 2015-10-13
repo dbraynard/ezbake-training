@@ -20,6 +20,8 @@ import java.util.Random;
 import java.util.ArrayList;
 
 import org.apache.thrift.TException;
+import org.apache.thrift.TSerializer;
+import org.apache.thrift.protocol.TSimpleJSONProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +29,14 @@ import ezbake.configuration.EzConfiguration;
 import ezbake.data.common.ThriftClient;
 import ezbake.security.client.EzbakeSecurityClient;
 import ezbake.base.thrift.EzSecurityToken;
-import ezbake.thrift.ThriftUtils;
+import ezbakehelpers.ezconfigurationhelpers.postgres.PostgresConfigurationHelper;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+//import java.sql.SQLException;
 
 public class PostgresDatasetClient {
 	private static final Logger logger = LoggerFactory
@@ -35,6 +44,7 @@ public class PostgresDatasetClient {
 
 	private static PostgresDatasetClient instance;
 	private EzbakeSecurityClient securityClient;
+	private Properties properties;
 
 	private PostgresDatasetClient() {
 		createClient();
@@ -51,15 +61,27 @@ public class PostgresDatasetClient {
 		ThriftClient.close();
 	}
 
-	public List<String> searchText(String searchText) throws TException {
+	public List<String> searchText(String searchText) throws TException,
+			SQLException {
 		List<String> results = new ArrayList<String>();
+
+		logger.info("Query postgres for {}...", searchText);
 
 		try {
 			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-			String serToken = ThriftUtils.serializeToBase64(token);
-			System.out.println("{" + serToken + "}");
+			PostgresConfigurationHelper helper = new PostgresConfigurationHelper(
+					this.properties);
+			try (Connection connection = helper.getEzPostgresConnection(token)) {
+				try (PreparedStatement ps = connection
+						.prepareStatement("select tweet from tweets where tweet like ?")) {
+					ps.setString(1, "%" + searchText + "%");
+					ResultSet rs = ps.executeQuery();
+					while (rs.next()) {
+						results.add(rs.getString("tweet"));
+					}
+				}
+			}
 
-			logger.info("Query postgres for {}...", searchText);
 			logger.info("Text search results: {}", results);
 		} finally {
 			assert true;
@@ -67,12 +89,10 @@ public class PostgresDatasetClient {
 		return results;
 	}
 
-	public void insertText(String text) throws TException {
+	public void insertText(String text) throws TException, SQLException {
 
 		try {
 			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
-			String serToken = ThriftUtils.serializeToBase64(token);
-			System.out.println("{" + serToken + "}");
 
 			Tweet tweet = new Tweet();
 			tweet.setTimestamp(System.currentTimeMillis());
@@ -83,6 +103,19 @@ public class PostgresDatasetClient {
 			tweet.setIsFavorite(new Random().nextBoolean());
 			tweet.setIsRetweet(new Random().nextBoolean());
 
+			TSerializer serializer = new TSerializer(
+					new TSimpleJSONProtocol.Factory());
+			String jsonContent = serializer.toString(tweet);
+
+			PostgresConfigurationHelper helper = new PostgresConfigurationHelper(
+					this.properties);
+			try (Connection connection = helper.getEzPostgresConnection(token)) {
+				try (PreparedStatement ps = connection
+						.prepareStatement("insert into tweets(tweet) values(?)")) {
+					ps.setString(1, jsonContent);
+					ps.execute();
+				}
+			}
 			logger.info("Successful postgres client insert");
 		} finally {
 			assert true;
@@ -92,9 +125,21 @@ public class PostgresDatasetClient {
 	private void createClient() {
 		try {
 			EzConfiguration configuration = new EzConfiguration();
-			Properties properties = configuration.getProperties();
+			this.properties = configuration.getProperties();
 			logger.info("in createClient, configuration: {}", properties);
-			securityClient = new EzbakeSecurityClient(properties);
+			this.securityClient = new EzbakeSecurityClient(properties);
+
+			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
+			PostgresConfigurationHelper helper = new PostgresConfigurationHelper(
+					this.properties);
+			try (Connection connection = helper.getEzPostgresConnection(token)) {
+				try (PreparedStatement ps = connection
+						.prepareStatement("DROP TABLE IF EXISTS tweets;"
+						+ "CREATE TABLE tweets(id SERIAL, tweet TEXT, visibility varchar(32768) default E'CwABAAAAAVUA')")) {
+					ps.execute();
+				}
+			}
+
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

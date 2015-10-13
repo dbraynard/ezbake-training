@@ -129,9 +129,9 @@
         <!-- Insert Text -->
         <div class="panel-body">
         	<h3>Select Your Favorite Dataset :</h3>
-            <p><input id="dataset" type="radio" name="dataset" class="dataset" value="mongo" checked> Mongo</input></p>
+            <p><input id="dataset" type="radio" name="dataset" class="dataset" value="mongo"> Mongo</input></p>
 			<p><input id="dataset" type="radio" name="dataset" class="dataset" value="elastic"> Elastic</input></p>
-			<p><input id="dataset" type="radio" name="dataset" class="dataset" value="postgres"> Postgres</input></p>
+			<p><input id="dataset" type="radio" name="dataset" class="dataset" value="postgres" checked> Postgres</input></p>
             <label>Insert Text</label>
 
             <textarea id="Content" class="form-control" rows="4" cols="40"
