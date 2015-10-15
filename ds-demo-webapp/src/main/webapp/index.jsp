@@ -128,9 +128,10 @@
 
         <!-- Insert Text -->
         <div class="panel-body">
-            <h3>Select Your Favorite Dataset :</h3>
-            <p><input id="dataset" type="radio" name="dataset" class="dataset" value="mongo" checked> Mongo</input></p>
+        	<h3>Select Your Favorite Dataset :</h3>
+            <p><input id="dataset" type="radio" name="dataset" class="dataset" value="mongo"> Mongo</input></p>
 			<p><input id="dataset" type="radio" name="dataset" class="dataset" value="elastic"> Elastic</input></p>
+			<p><input id="dataset" type="radio" name="dataset" class="dataset" value="postgres" checked> Postgres</input></p>
             <label>Insert Text</label>
 
             <textarea id="Content" class="form-control" rows="4" cols="40"
@@ -153,9 +154,8 @@
         <ul class="list-group">
             <li class="list-group-item">
                 <label>Search Text</label>
-                <em class="hint" style="margin-top: 10px;">Enter search term (stop words such as 'the', 'an', 'a' are
-                    not supported):</em>
-                <input id="searchText" type="text" class="form-control" placeholder=""></br>
+                <em class="hint" style="margin-top: 10px;">Enter search term :</em>
+                <input id="searchText" type="text" class="form-control" placeholder="Enter search term here"></br>
 
             <span class="input-group-btn">
                 <button class="btn btn-info btn-large" id="searchButton" type="button" name="search"

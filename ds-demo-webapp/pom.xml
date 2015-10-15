@@ -62,9 +62,14 @@
             <groupId>ezbake</groupId>
             <artifactId>ins-thrift</artifactId>
         </dependency>
-       <dependency>
+        <dependency>
             <groupId>ezbake.data</groupId>
             <artifactId>ezelastic-thrift</artifactId>
+            <version>${ezbake.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ezbake.data</groupId>
+            <artifactId>ezbake-jdbc-driver</artifactId>
             <version>${ezbake.version}</version>
         </dependency>
 
@@ -97,10 +102,10 @@
                     <scanIntervalSeconds>10</scanIntervalSeconds>
                     <connectors>
                         <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
-                        <port>9090</port>
-                        <maxIdleTime>60000</maxIdleTime>
-                    </connector>
-                </connectors>
+                            <port>9090</port>
+                            <maxIdleTime>60000</maxIdleTime>
+                        </connector>
+                    </connectors>
                 </configuration>
             </plugin>
             <plugin>

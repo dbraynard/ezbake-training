@@ -177,6 +177,12 @@ public class DatasetServlet extends HttpServlet {
 				data = client.searchText(COLLECTION_NAME, searchText);
 				break;
 			}
+			case "postgres":
+			{
+				PostgresDatasetClient client = PostgresDatasetClient.getInstance();
+				data = client.searchText(searchText);
+				break;
+			}
 			default:
 				throw new IllegalArgumentException("Invalid dataset: "
 						+ dataset);
@@ -224,6 +230,12 @@ public class DatasetServlet extends HttpServlet {
 			{
 				ElasticDatasetClient client = ElasticDatasetClient.getInstance();
 				client.insertText(COLLECTION_NAME, textContent);
+				break;
+			}
+			case "postgres":
+			{
+				PostgresDatasetClient client = PostgresDatasetClient.getInstance();
+				client.insertText(textContent);
 				break;
 			}
 			default:
