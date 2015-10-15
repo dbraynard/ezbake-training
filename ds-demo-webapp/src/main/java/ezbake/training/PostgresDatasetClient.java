@@ -28,7 +28,9 @@ import org.slf4j.LoggerFactory;
 import ezbake.configuration.EzConfiguration;
 import ezbake.data.common.ThriftClient;
 import ezbake.security.client.EzbakeSecurityClient;
+import ezbake.thrift.ThriftUtils;
 import ezbake.base.thrift.EzSecurityToken;
+import ezbake.base.thrift.Visibility;
 import ezbakehelpers.ezconfigurationhelpers.postgres.PostgresConfigurationHelper;
 
 import java.sql.Connection;
@@ -73,11 +75,15 @@ public class PostgresDatasetClient {
 					this.properties);
 			try (Connection connection = helper.getEzPostgresConnection(token)) {
 				try (PreparedStatement ps = connection
-						.prepareStatement("select tweet from tweets where tweet like ?")) {
+						.prepareStatement("select tweet, visibility from tweets where tweet like ?")) {
 					ps.setString(1, "%" + searchText + "%");
 					ResultSet rs = ps.executeQuery();
 					while (rs.next()) {
-						results.add(rs.getString("tweet"));
+						results.add(rs.getString("tweet")
+								+ ":"
+								+ ThriftUtils.deserializeFromBase64(
+										Visibility.class,
+										rs.getString("visibility")).getFormalVisibility());
 					}
 				}
 			}
@@ -89,7 +95,8 @@ public class PostgresDatasetClient {
 		return results;
 	}
 
-	public void insertText(String text) throws TException, SQLException {
+	public void insertText(String text, String inputVisibility)
+			throws TException, SQLException {
 
 		try {
 			EzSecurityToken token = securityClient.fetchTokenForProxiedUser();
@@ -109,10 +116,14 @@ public class PostgresDatasetClient {
 
 			PostgresConfigurationHelper helper = new PostgresConfigurationHelper(
 					this.properties);
+			Visibility visibility = new Visibility();
+			visibility.setFormalVisibility(inputVisibility);
+
 			try (Connection connection = helper.getEzPostgresConnection(token)) {
 				try (PreparedStatement ps = connection
-						.prepareStatement("insert into tweets(tweet) values(?)")) {
+						.prepareStatement("insert into tweets(tweet, visibility) values(?,?)")) {
 					ps.setString(1, jsonContent);
+					ps.setString(2, ThriftUtils.serializeToBase64(visibility));
 					ps.execute();
 				}
 			}
@@ -135,7 +146,7 @@ public class PostgresDatasetClient {
 			try (Connection connection = helper.getEzPostgresConnection(token)) {
 				try (PreparedStatement ps = connection
 						.prepareStatement("DROP TABLE IF EXISTS tweets;"
-						+ "CREATE TABLE tweets(id SERIAL, tweet TEXT, visibility varchar(32768) default E'CwABAAAAAVUA')")) {
+								+ "CREATE TABLE tweets(id SERIAL, tweet TEXT, visibility varchar(32768) default E'CwABAAAAAVUA')")) {
 					ps.execute();
 				}
 			}

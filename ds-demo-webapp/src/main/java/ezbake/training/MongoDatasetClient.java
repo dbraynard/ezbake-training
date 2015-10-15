@@ -164,7 +164,7 @@ public class MongoDatasetClient {
 		return results;
 	}
 
-	public void insertText(String collectionName, String text)
+	public void insertText(String collectionName, String text, String inputVisibility)
 			throws TException {
 		EzMongo.Client c = null;
 
@@ -182,13 +182,13 @@ public class MongoDatasetClient {
 			tweet.setIsFavorite(new Random().nextBoolean());
 			tweet.setIsRetweet(new Random().nextBoolean());
 
-			Visibility visibility = new Visibility();
 			TSerializer serializer = new TSerializer(
 					new TSimpleJSONProtocol.Factory());
 			String jsonContent = serializer.toString(tweet);
 
+			Visibility visibility = new Visibility();
 			String result = c.insert(collectionName, new MongoEzbakeDocument(
-					jsonContent, visibility.setFormalVisibility("U")), token);
+					jsonContent, visibility.setFormalVisibility(inputVisibility)), token);
 			logger.info("Successful mongo client insert {}", result);
 		} finally {
 			if (c != null) {

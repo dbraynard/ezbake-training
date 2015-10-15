@@ -55,6 +55,7 @@
 
             var content = $("#inputContent").val();
             var dataset = $(".dataset:checked").val();
+            var visibility = $("#inputVisibility").val();
 
             $("#insertResult").attr('class', 'text-success');
             $("#insertResult").html("Calling the dataset service, please wait...");
@@ -62,7 +63,7 @@
 
             $.ajax({
                 url: 'DatasetServlet', type: "POST", data: {
-                    action: 'insertText', content: content, dataset: dataset
+                    action: 'insertText', content: content, dataset: dataset, visibility: visibility
                 }, success: function (result) {
                     $("#insertResult").attr('class', 'text-success');
                     $("#insertResult").html(result);
@@ -141,6 +142,7 @@
                 <div id="characters" class="numCharacters">0</div>
             </em>
             <em class="hint" style="margin-top: 10px;">(max 140 characters)</em>
+            <input id="inputVisibility" type="text" class="form-control" placeholder="Enter visibility. Default is 'U' (Unclassified)"></br>
             <span class="input-group-btn">
                 <button class="btn btn-info btn-large" id="insertButton" type="button" name="insert"
                         onClick="insert()">Submit
@@ -166,7 +168,7 @@
             </li>
             <li class="list-group-item">
                 <!-- Search result output list -->
-                <table id="searchResult" class="table table-condensed">
+                <table id="searchResult" class="table table-condensed table-bordered table-hover table-striped">
                     <thead>
                         <tr>
                             <th class="text">Result</th>

@@ -217,25 +217,29 @@ public class DatasetServlet extends HttpServlet {
 			HttpServletResponse response) {
 		String textContent = request.getParameter("content");
 		String dataset = request.getParameter("dataset");
+		String visibility = request.getParameter("visibility");
 		String result = null;
+
+		visibility = visibility.isEmpty() ? "U" : visibility;
+
 		try {
 			switch (dataset) {
 			case "mongo":
 			{
 				MongoDatasetClient client = MongoDatasetClient.getInstance();
-				client.insertText(COLLECTION_NAME, textContent);
+				client.insertText(COLLECTION_NAME, textContent, visibility);
 				break;
 			}
 			case "elastic":
 			{
 				ElasticDatasetClient client = ElasticDatasetClient.getInstance();
-				client.insertText(COLLECTION_NAME, textContent);
+				client.insertText(COLLECTION_NAME, textContent, visibility);
 				break;
 			}
 			case "postgres":
 			{
 				PostgresDatasetClient client = PostgresDatasetClient.getInstance();
-				client.insertText(textContent);
+				client.insertText(textContent, visibility);
 				break;
 			}
 			default:
