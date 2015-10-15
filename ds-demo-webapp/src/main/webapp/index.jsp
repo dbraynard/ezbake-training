@@ -34,7 +34,7 @@
 
     <script type="text/javascript">
         $(function () {
-            $('#Content').keyup(function () {
+            $('#inputContent').keyup(function () {
                 var count = $(this).val().length;
                 $('#characters').text(count);
                 //console.log("# char: " + count);
@@ -53,7 +53,7 @@
                 return;
             }
 
-            var content = $("#Content").val();
+            var content = $("#inputContent").val();
             var dataset = $(".dataset:checked").val();
 
             $("#insertResult").attr('class', 'text-success');
@@ -96,7 +96,7 @@
         }
 
         function validateNumCharacters() {
-            var count = $('#Content').val().length;
+            var count = $('#inputContent').val().length;
 
             if (count > 140) {
                 alert("You have exceeded 140 characters: " + count);
@@ -128,14 +128,15 @@
 
         <!-- Insert Text -->
         <div class="panel-body">
-        	<h3>Select Your Favorite Dataset :</h3>
+
+            <h3>Select Your Favorite Dataset:</h3>
             <p><input id="dataset" type="radio" name="dataset" class="dataset" value="mongo"> Mongo</input></p>
-			<p><input id="dataset" type="radio" name="dataset" class="dataset" value="elastic"> Elastic</input></p>
-			<p><input id="dataset" type="radio" name="dataset" class="dataset" value="postgres" checked> Postgres</input></p>
+            <p><input id="dataset" type="radio" name="dataset" class="dataset" value="elastic" checked> Elastic</input></p>
+            <p><input id="dataset" type="radio" name="dataset" class="dataset" value="postgres"> Postgres</input></p>
+
             <label>Insert Text</label>
 
-            <textarea id="Content" class="form-control" rows="4" cols="40"
-                      placeholder="Enter text here"></textarea>
+            <textarea id="inputContent" class="form-control" placeholder="Enter text here"></textarea>
             <em class="hint" style="margin-top: 10px;">Number of characters:
                 <div id="characters" class="numCharacters">0</div>
             </em>
