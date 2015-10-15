@@ -87,7 +87,7 @@ public class ElasticDatasetClient {
 			final SearchResult result = c.query(new Query(QueryBuilders
 					.termQuery("text", searchText).toString()), token);
 			for (Document doc : result.getMatchingDocuments()) {
-				results.add(doc.get_jsonObject());
+				results.add(doc.get_jsonObject() + ":" + doc.visibility.getFormalVisibility());
 			}
 			logger.info("Text search results: {}", results);
 		} finally {
@@ -98,7 +98,7 @@ public class ElasticDatasetClient {
 		return results;
 	}
 
-	public void insertText(String collectionName, String text)
+	public void insertText(String collectionName, String text, String inputVisibility)
 			throws TException {
 		EzElastic.Client c = null;
 
@@ -117,7 +117,6 @@ public class ElasticDatasetClient {
 			tweet.setIsFavorite(new Random().nextBoolean());
 			tweet.setIsRetweet(new Random().nextBoolean());
 
-			Visibility visibility = new Visibility();
 			TSerializer serializer = new TSerializer(
 					new TSimpleJSONProtocol.Factory());
 			String jsonContent = serializer.toString(tweet);
@@ -126,7 +125,9 @@ public class ElasticDatasetClient {
 			doc.set_id(UUID.randomUUID().toString());
 			doc.set_type("TEST");
 			doc.set_jsonObject(jsonContent);
-			doc.setVisibility(visibility.setFormalVisibility("U"));
+
+			Visibility visibility = new Visibility();
+			doc.setVisibility(visibility.setFormalVisibility(inputVisibility));
 
 			c.put(doc, token);
 
