@@ -1,0 +1,22 @@
+Application:
+  name: ds_demo
+  datasets: []
+  security_id: 104592954198924385
+  auths: []
+
+  Services:
+    -
+      type: WebApp
+      web_app_name: dsdemo
+      external_web_url: ds-demo-webapp
+      internal_web_url: ds-demo-webapp
+      scaling:
+          number_of_instances: 1
+      artifact_info:
+        resources:
+          cpu: small
+          mem: small
+          disk: small
+        language: Java
+        bin: ROOT.war
+
