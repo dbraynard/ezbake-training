@@ -183,6 +183,12 @@ public class DatasetServlet extends HttpServlet {
 				data = client.searchText(searchText);
 				break;
 			}
+                        case "hive":
+			{
+				HiveDatasetClient client = HiveDatasetClient.getInstance();
+				data = client.searchText(searchText);
+				break;
+			}
 			default:
 				throw new IllegalArgumentException("Invalid dataset: "
 						+ dataset);
@@ -239,6 +245,12 @@ public class DatasetServlet extends HttpServlet {
 			case "postgres":
 			{
 				PostgresDatasetClient client = PostgresDatasetClient.getInstance();
+				client.insertText(textContent, visibility);
+				break;
+			}
+                        case "hive":
+			{
+				HiveDatasetClient client = HiveDatasetClient.getInstance();
 				client.insertText(textContent, visibility);
 				break;
 			}

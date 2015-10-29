@@ -134,6 +134,7 @@
             <p><input id="dataset" type="radio" name="dataset" class="dataset" value="mongo"> Mongo</input></p>
             <p><input id="dataset" type="radio" name="dataset" class="dataset" value="elastic" checked> Elastic</input></p>
             <p><input id="dataset" type="radio" name="dataset" class="dataset" value="postgres"> Postgres</input></p>
+            <p><input id="dataset" type="radio" name="dataset" class="dataset" value="hive"> Hive</input></p>
 
             <label>Insert Text</label>
 
