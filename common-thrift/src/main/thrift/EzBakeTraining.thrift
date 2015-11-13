@@ -98,3 +98,21 @@ service TweetWordCountService extends EzBakeBase.EzBakeBaseService {
      */
     i32 getCount(1: string word, 2: EzBakeBase.EzSecurityToken securityToken);
 }
+
+
+/**
+ * A simple service which queries for person objects across Intent Providers.
+ */
+service PersonQueryService extends EzBakeBase.EzBakeBaseService {    
+
+    /**
+     * Gets a list of people with the given last name.
+     *
+     * @param word Word whose count to query
+     * @param securityToken EzBake security token
+     *
+     * @returns count of the requested word
+     */
+    set<string> getPersons(1: string lastname, 2: EzBakeBase.EzSecurityToken securityToken);
+}
+
